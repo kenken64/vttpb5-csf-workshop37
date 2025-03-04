@@ -1,0 +1,42 @@
+package sg.edu.nus.iss.csf.workshop37.server.controller;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import sg.edu.nus.iss.csf.workshop37.server.models.City;
+import sg.edu.nus.iss.csf.workshop37.server.services.CitiesService;
+
+@Controller
+public class CitiesController {
+
+    @Autowired
+    private CitiesService citiesService;
+
+    @GetMapping(path="/api/cities", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAllCities() {
+        JsonArray result = null;
+        
+        Optional<List<City>> cities = citiesService.getAllCities();
+        List<City> aa = cities.get();
+        JsonArrayBuilder b = Json.createArrayBuilder();
+        for(City c : aa) {
+            b.add(c.toJson());
+        }
+        result = b.build();
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(result.toString());
+    }
+    
+}
