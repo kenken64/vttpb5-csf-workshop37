@@ -21,6 +21,7 @@ import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import sg.edu.nus.iss.csf.workshop37.server.models.Post;
 import sg.edu.nus.iss.csf.workshop37.server.services.FileUploadService;
+import sg.edu.nus.iss.csf.workshop37.server.services.S3Service;
 
 @Controller
 @Qualifier("wrkshp36FileUploadController")
@@ -28,6 +29,9 @@ public class FileUploadController {
     private static final String BASE64_PREFIX = "data:image/png;base64,";
     @Autowired
     private FileUploadService fileUploadService;
+
+    @Autowired
+    private S3Service s3Service;
 
     @PostMapping(path="/api/upload", 
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -40,6 +44,8 @@ public class FileUploadController {
         try{
             postId = this.fileUploadService.upload(file, comments);
             System.out.println("Post ID: " + postId);
+            if(postId !=null && !postId.isEmpty())
+                this.s3Service.upload(file, comments, postId);
         }catch(SQLException | IOException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
