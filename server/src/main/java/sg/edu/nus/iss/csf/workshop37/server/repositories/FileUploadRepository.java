@@ -28,23 +28,26 @@ public class FileUploadRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private DataSource dataSource; 
-
-    public String upload(MultipartFile file, String comments) 
-        throws SQLException, IOException{
-        try(Connection con = dataSource.getConnection();
-            PreparedStatement ps = con.prepareStatement(INSERT_POST)) {
-            String postId = UUID.randomUUID()
-                        .toString().replace("-","")
-                        .substring(0,8);
-            System.out.println(postId);
-            ps.setString(1, postId);
-            ps.setString(2, comments);
-            ps.setBytes(3, file.getBytes());
-            ps.executeUpdate();
-            return postId;
-        } 
+    public String upload(MultipartFile file, String comments) {
+        // Generate a unique postId
+        String postId = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        System.out.println(postId);
+    
+        try {
+            // Attempt to read the file bytes
+            byte[] fileBytes = file.getBytes();
+    
+            // Use JdbcTemplate to perform the update
+            jdbcTemplate.update(INSERT_POST, ps -> {
+                ps.setString(1, postId);
+                ps.setString(2, comments);
+                ps.setBytes(3, fileBytes);
+            });
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to upload file content", e);
+        }
+    
+        return postId;
     }
 
     public Optional<Post> getPostById(String postId) {

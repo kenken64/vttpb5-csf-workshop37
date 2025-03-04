@@ -15,6 +15,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 
 @Service
 public class S3Service {
@@ -23,6 +24,9 @@ public class S3Service {
 
     @Value("${do.storage.bucket}")
     private String bucketName;
+
+    @Value("${do.storage.endpoint}")
+    private String endPoint;
 
     public String upload(MultipartFile file, String comments, String postId) throws IOException {
         Map<String, String> userData = new HashMap<String, String>();
@@ -56,7 +60,8 @@ public class S3Service {
                     "picture%s.%s".formatted(postId, fileNameExt), 
                     file.getInputStream(), metadata);
         req.withCannedAcl(CannedAccessControlList.PublicRead);
-        s3Client.putObject(req);
-        return "picture%s.%s".formatted(postId, fileNameExt);
+        PutObjectResult r = s3Client.putObject(req);
+        
+        return "https://%s.%s/picture%s.%s".formatted(bucketName, endPoint, postId, fileNameExt);
     }
 }

@@ -41,11 +41,13 @@ public class FileUploadController {
             @RequestPart("comments") String comments) {
 
         String postId = "";
+        String s3EndpointUrl = "";
         try{
             postId = this.fileUploadService.upload(file, comments);
             System.out.println("Post ID: " + postId);
             if(postId !=null && !postId.isEmpty())
-                this.s3Service.upload(file, comments, postId);
+                s3EndpointUrl = this.s3Service.upload(file, comments, postId);
+            System.out.println(s3EndpointUrl);
         }catch(SQLException | IOException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
@@ -65,7 +67,6 @@ public class FileUploadController {
         JsonObject payload = Json.createObjectBuilder()
             .add("image", BASE64_PREFIX + encodingString)
             .build();
-        System.out.println("Image: " + payload.toString());
         return ResponseEntity.ok(payload.toString());
     }
 }
